@@ -25,8 +25,15 @@ public class UserService {
     public AuthToken login(String emailId,long otp){
         try {
             Optional<Otp> newOtp = this.otpRepository.findById(otp);
+            Optional<UserInfo> myUser = this.userDataRepository.findByEmailId(emailId);
+            UserInfo user=new UserInfo();
+            if(!myUser.isPresent()){
             UserInfo userInfo=new UserInfo(emailId,0);
-            UserInfo user = this.userDataRepository.save(userInfo);
+            user = this.userDataRepository.save(userInfo);
+        }
+        else{
+            user=myUser.get();
+        }
             if (newOtp.isPresent() && newOtp.get().getEmailId().equalsIgnoreCase(emailId)) {
 
                 if (isExpired(newOtp.get(),emailId,user)) {
@@ -40,9 +47,10 @@ public class UserService {
                 return new AuthToken(jwtUtil.generateToken(emailId), "Otp verified", true);
 
             }
-            int numberOfAttempts = user.getNumberOfAttempts();
-            user.setNumberOfAttempts(numberOfAttempts+1);
-            userDataRepository.save(user);
+            Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(emailId);
+            int numberOfAttempts = findByEmailId.get().getNumberOfAttempts();
+            findByEmailId.get().setNumberOfAttempts(numberOfAttempts+1);
+            userDataRepository.save(findByEmailId.get());
             return new AuthToken(null, "EmailId invalid", false);
 
 
@@ -56,9 +64,10 @@ public class UserService {
         int minute = otp.getGenerateAt().getMinute();
         int minute1 = LocalDateTime.now().getMinute();
         if(Math.abs(minute-minute1)>=5){
-            int numberOfAttempts = user.getNumberOfAttempts();
-            user.setNumberOfAttempts(numberOfAttempts+1);
-            userDataRepository.save(user);
+            Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(emailId);
+            int numberOfAttempts = findByEmailId.get().getNumberOfAttempts();
+            findByEmailId.get().setNumberOfAttempts(numberOfAttempts+1);
+            userDataRepository.save(findByEmailId.get());
             return true;
         }
         return false;
@@ -66,8 +75,9 @@ public class UserService {
 
     boolean isValid(UserInfo user,Otp otp){
         if(user.getNumberOfAttempts() < 5 || Math.abs(otp.getGenerateAt().getHour() - LocalDateTime.now().getHour()) >= 1){
-           user.setNumberOfAttempts(0);
-           this.userDataRepository.save(user);
+            Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(user.getEmailId());
+            findByEmailId.get().setNumberOfAttempts(0);
+            userDataRepository.save(findByEmailId.get());
            return true;
         }
         return false;
