@@ -1,12 +1,10 @@
 package com.simplify.emailOtp.controller;
 
 import com.simplify.emailOtp.dao.OtpService;
+import com.simplify.emailOtp.model.OtpRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/otp")
@@ -15,9 +13,9 @@ public class OtpController {
 
     @Autowired
     private OtpService otpService;
-    @PostMapping("/generateOtp/{emailId}")
-    ResponseEntity<String> generateOtp(@PathVariable("emailId") String emailId){
-        this.otpService.generateNewOtp(emailId);
-     return ResponseEntity.ok("Otp Mail Send");
+    @PostMapping("/generateOtp")
+    ResponseEntity<String> generateOtp(@RequestBody OtpRequest request){
+      String msg=  this.otpService.generateNewOtp(request.getEmailId())?"Otp is sent on Mail":"regenerate after one minute";
+     return ResponseEntity.ok(msg);
     }
 }

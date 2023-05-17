@@ -10,6 +10,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
@@ -23,8 +25,11 @@ public class OtpService {
 
     @Autowired
     private JavaMailSender javaMailSender;
-    public void generateNewOtp(String emailId) {
-        while(true) {
+    public boolean generateNewOtp(String emailId) {
+        emailId=emailId.toLowerCase();
+        Otp otp2 = this.otpRepository.findByEmailId(emailId);
+        if(isValidOtp(otp2)) {
+            while(true) {
             try {
                 char[] oTp = this.OTP();
                 StringBuilder stringBuilder = new StringBuilder();
@@ -32,6 +37,9 @@ public class OtpService {
                     stringBuilder.append(c);
                 }
                 long otp = Long.parseLong(stringBuilder.toString());
+                if(otp2!=null){
+                    this.otpRepository.delete(otp2);
+                }
                 Otp otp1 = new Otp(otp, emailId);
                 this.otpRepository.save(otp1);
                 sendMail(emailId, otp);
@@ -40,6 +48,9 @@ public class OtpService {
                e.printStackTrace();
             }
         }
+            return true;
+        }
+        return false;
     }
 
     private char[] OTP() {
@@ -63,5 +74,17 @@ public class OtpService {
         message.setText(String.valueOf(otp));
         javaMailSender.send(message);
     }
+
+     boolean isValidOtp(Otp otp){
+        if(otp==null){
+            return true;
+        }
+
+         if(Duration.between(otp.getGenerateAt(), LocalDateTime.now()).getSeconds()>=60){
+            return true;
+         }
+        return false;
+    }
+
 
 }

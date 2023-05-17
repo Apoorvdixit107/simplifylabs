@@ -1,17 +1,16 @@
 package com.simplify.emailOtp.model;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotEmpty;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
 
 @Data
-public class AuthRequest {
-
-    @NotEmpty
+@AllArgsConstructor
+@NoArgsConstructor
+public class OtpRequest {
     @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
     private String emailId;
-    @NotEmpty
-    private long otp;
+
 }
