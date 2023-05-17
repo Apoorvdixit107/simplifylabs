@@ -10,7 +10,7 @@ import lombok.Data;
 public class AuthRequest {
 
     @NotEmpty
-    @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @Email(message = "Email is not valid")
     private String emailId;
     @NotEmpty
     private long otp;

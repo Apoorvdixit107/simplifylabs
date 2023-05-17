@@ -68,7 +68,11 @@ public class UserService {
                 return new AuthToken(null, "Otp Expired", false);
             }
 
-
+            Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(emailId);
+            UserInfo currentUser = findByEmailId.get();
+            currentUser.setNumberOfAttempts(0);
+            currentUser.setLastAttempt(currentTime);
+            userDataRepository.save(currentUser);
             return new AuthToken(jwtUtil.generateToken(emailId), "Otp verified", true);
 
 

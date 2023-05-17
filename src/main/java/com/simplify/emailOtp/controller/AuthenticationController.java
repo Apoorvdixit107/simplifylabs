@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
@@ -23,8 +25,8 @@ public class AuthenticationController {
     private UserService userService;
 
     @PostMapping("/login")
-    @JsonIgnore
-    public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody AuthRequest request) {
         try {
 
             AuthRequest authRequest = new AuthRequest();
@@ -35,7 +37,7 @@ public class AuthenticationController {
 
         }
         catch (Exception e){
-            return ResponseEntity.ok(new ResponseModel("failure",e.getMessage()));
+            return ResponseEntity.ok(new ApiResponse("failure","Authentication Failed",null));
         }
     }
 }
