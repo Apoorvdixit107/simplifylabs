@@ -7,6 +7,7 @@ import com.simplify.emailOtp.repository.UserDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
@@ -33,12 +34,7 @@ public class OtpService {
                 long otp = Long.parseLong(stringBuilder.toString());
                 Otp otp1 = new Otp(otp, emailId);
                 this.otpRepository.save(otp1);
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom("noreply@apoorv.dixit.developer.com");
-                message.setTo(emailId);
-                message.setSubject("otp");
-                message.setText(String.valueOf(otp));
-                javaMailSender.send(message);
+                sendMail(emailId, otp);
                 break;
             } catch (Exception e) {
                e.printStackTrace();
@@ -56,6 +52,16 @@ public class OtpService {
                     numbers.charAt(rand.nextInt(numbers.length()));
         }
         return otp;
+    }
+
+    @Async
+    private void sendMail(String emailId,long otp){
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("noreply@apoorv.dixit.developer.com");
+        message.setTo(emailId);
+        message.setSubject("otp");
+        message.setText(String.valueOf(otp));
+        javaMailSender.send(message);
     }
 
 }

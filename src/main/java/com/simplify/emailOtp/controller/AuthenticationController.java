@@ -1,5 +1,8 @@
 package com.simplify.emailOtp.controller;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.simplify.emailOtp.dao.UserService;
 import com.simplify.emailOtp.model.ApiResponse;
 import com.simplify.emailOtp.model.AuthRequest;
@@ -20,6 +23,7 @@ public class AuthenticationController {
     private UserService userService;
 
     @PostMapping("/login")
+    @JsonIgnore
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         try {
 
@@ -27,8 +31,7 @@ public class AuthenticationController {
             authRequest.setEmailId(request.getEmailId());
             authRequest.setOtp(request.getOtp());
             AuthToken authToken = this.userService.login(authRequest.getEmailId(), authRequest.getOtp());
-            return ResponseEntity.ok(new ApiResponse("success", authToken.getMessage(), authToken.getToken()==null?
-                    "None":authToken.getToken()));
+            return ResponseEntity.ok(new ApiResponse("success", authToken.getMessage(), authToken.getToken()));
 
         }
         catch (Exception e){

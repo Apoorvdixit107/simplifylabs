@@ -34,24 +34,35 @@ public class UserService {
         else{
             user=myUser.get();
         }
-            if (newOtp.isPresent() && newOtp.get().getEmailId().equalsIgnoreCase(emailId)) {
-
-                if (isExpired(newOtp.get(),emailId,user)) {
-                    return new AuthToken(null, "Otp Expired", false);
-                }
-                if (!isValid(user,newOtp.get())) {
-                    return new AuthToken(null, "Otp Invalid", false);
-                }
-
-
-                return new AuthToken(jwtUtil.generateToken(emailId), "Otp verified", true);
-
-            }
+        if (isBlocked(user,newOtp.get())) {
+            return new AuthToken(null, "EmailId blocked for one hour", false);
+        }
+        if(!newOtp.isPresent()){
             Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(emailId);
             int numberOfAttempts = findByEmailId.get().getNumberOfAttempts();
             findByEmailId.get().setNumberOfAttempts(numberOfAttempts+1);
             userDataRepository.save(findByEmailId.get());
-            return new AuthToken(null, "EmailId invalid", false);
+            return new AuthToken(null, "Invalid Otp", false);
+        }
+        if((newOtp.isPresent()&&!newOtp.get().getEmailId().equalsIgnoreCase(emailId))){
+            Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(emailId);
+            int numberOfAttempts = findByEmailId.get().getNumberOfAttempts();
+            findByEmailId.get().setNumberOfAttempts(numberOfAttempts+1);
+            userDataRepository.save(findByEmailId.get());
+            return new AuthToken(null, "Invalid EmailId", false);
+        }
+        
+
+                if (isExpired(newOtp.get(),emailId,user)) {
+                    return new AuthToken(null, "Otp Expired", false);
+                }
+                
+
+
+                return new AuthToken(jwtUtil.generateToken(emailId), "Otp verified", true);
+
+            
+            
 
 
         }
@@ -73,14 +84,14 @@ public class UserService {
         return false;
     }
 
-    boolean isValid(UserInfo user,Otp otp){
+    boolean isBlocked(UserInfo user,Otp otp){
         if(user.getNumberOfAttempts() < 5 || Math.abs(otp.getGenerateAt().getHour() - LocalDateTime.now().getHour()) >= 1){
             Optional<UserInfo> findByEmailId = this.userDataRepository.findByEmailId(user.getEmailId());
             findByEmailId.get().setNumberOfAttempts(0);
             userDataRepository.save(findByEmailId.get());
-           return true;
+           return false;
         }
-        return false;
+        return true;
 
     }
 
